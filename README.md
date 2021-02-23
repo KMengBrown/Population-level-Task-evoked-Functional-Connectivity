@@ -1,6 +1,6 @@
 # Population-level-Task-evoked-Functional-Connectivity
 
-* Description: This repository is devoted to the ptFCE and AMUSE-ptFCE algorithms. These algorithms come from the paper "Population-level Task-evoked Functional Connectivity" by Kun Meng and Ani Eloyan (hereafter ME). This paper is available at XXX.
+* Description: This repository is devoted to the ptFCE and AMUSE-ptFCE algorithms. These algorithms come from the paper "Population-level Task-evoked Functional Connectivity" by Kun Meng and Ani Eloyan (hereafter ME). This paper is available at (TBD).
 
 * Depends R (>= 3.0)
 
