@@ -17,7 +17,7 @@ scaling=seq(from=0.01, to=5, length.out = lambda_length)
 ###################################
 
 # The underlying ptFC. 
-underlying_ptFC=0.25
+underlying_ptFC=0.5
 
 # Repeatition time
 TR=0.72
