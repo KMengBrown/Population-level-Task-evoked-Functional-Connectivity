@@ -39,4 +39,7 @@ Further details are provided in each script file.
 
 
 Kun (Michael) Meng,
-Ph.D. Candidate, Department of Biostatistics, Brown University
+
+Ph.D. Candidate, 
+Department of Biostatistics, 
+Brown University
