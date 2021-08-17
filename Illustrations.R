@@ -21,7 +21,7 @@ library("neuRosim")
 ###################################
 
 # The underlying ptFC. 
-underlying_ptFC=0.25
+underlying_ptFC=0.7
 
 # Repeatition time
 TR=0.72
@@ -30,8 +30,7 @@ TR=0.72
 t.obs=(0:283)*TR
 
 ## Number of participants
-N.participants=308
-
+N.participants=10000
 
 ###################################
 ## 1.2 Stimulus signals
@@ -92,7 +91,8 @@ h_l_function=function(t){ return(canonicalHRF(t, parameter.list, verbose = FALSE
 ###################################
 
 t.0.k=0  
-t.0.l=0  
+t.0.l=0
+# Latency times are usually much smaller than the TR in experiments of interest.
 
 
 ###################################
@@ -157,15 +157,19 @@ beta.lf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.lh=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.rf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.t=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+beta.lf_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+beta.lh_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+beta.rf_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+beta.t_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 
 
 ###################################
 ## 1.7 Random noise
 ###################################
 
-v1.noise=1
-v2.noise=1
-cor.noise=0.2
+v1.noise=10
+v2.noise=10
+cor.noise=0
 var.noise=cbind(c(v1.noise, sqrt(v1.noise)*sqrt(v2.noise)*cor.noise), c(sqrt(v1.noise)*sqrt(v2.noise)*cor.noise, v2.noise))
 
 
@@ -185,13 +189,20 @@ for (iter in 1:N.participants) {
   Y.l.mat[iter,] = 9000 + beta.interest[iter,2]*h.l.conv.N.shifted + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise[,2]
   
   Noise1=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
-  R.k.mat[iter,] = 9000 + beta.lf[iter,1]*h.k.conv.N.lf+beta.lh[iter,1]*h.k.conv.N.lh+beta.rf[iter,1]*h.k.conv.N.rf+beta.t[iter,1]*h.k.conv.N.t + Noise1[,1]
-  R.l.mat[iter,] = 9000 + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise1[,2]
+  R.k.mat[iter,] = 9000 + beta.lf_tilde[iter,1]*h.k.conv.N.lf+beta.lh_tilde[iter,1]*h.k.conv.N.lh+beta.rf_tilde[iter,1]*h.k.conv.N.rf+beta.t_tilde[iter,1]*h.k.conv.N.t + Noise1[,1]
+  R.l.mat[iter,] = 9000 + beta.lf_tilde[iter,2]*h.l.conv.N.lf+beta.lh_tilde[iter,2]*h.l.conv.N.lh+beta.rf_tilde[iter,2]*h.l.conv.N.rf+beta.t_tilde[iter,2]*h.l.conv.N.t + Noise1[,2]
   
 }
 
 
+## Plot examples of Y_k, Y_l, R_tilde_k, and R_tilde_l
+par(mfrow=c(4, 1), mar=c(4,4,0.5,0.5))
+plot(t.obs, Y.k.mat[1,], type = "l", xlab = "Time", ylab = "Y_k (t)")
+plot(t.obs, Y.l.mat[1,], type = "l", xlab = "Time", ylab = "Y_l (t)")
+plot(t.obs, R.k.mat[1,], type = "l", xlab = "Time", ylab = "R_tilde_k (t)")
+plot(t.obs, R.l.mat[1,], type = "l", xlab = "Time", ylab = "R_tilde_l (t)")
 
+par(mfrow=c(1, 1))
 ###################################
 ## 2 Estimation using the
 ##   ptFCE algorithm
@@ -209,7 +220,7 @@ est_ptFCE$est
 ##   AMUSE-ptFCE algorithm
 ###################################
 
-est_AMUSE_ptFCE=AMUSE_ptFCE(Y_k=Y.k.mat, Y_l = Y.l.mat, N=N.values, TR=0.72, freq_plot=FALSE)
+est_AMUSE_ptFCE=AMUSE_ptFCE(Y_k=Y.k.mat, Y_l = Y.l.mat, N=N.values, TR=0.72, freq_plot=TRUE)
 abs(cor(beta.interest[,1], beta.interest[,2]))
 est_AMUSE_ptFCE$est
 
