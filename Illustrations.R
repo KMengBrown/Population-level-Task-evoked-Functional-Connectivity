@@ -167,8 +167,8 @@ beta.t_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 ## 1.7 Random noise
 ###################################
 
-v1.noise=10
-v2.noise=10
+v1.noise=30
+v2.noise=30
 cor.noise=0
 var.noise=cbind(c(v1.noise, sqrt(v1.noise)*sqrt(v2.noise)*cor.noise), c(sqrt(v1.noise)*sqrt(v2.noise)*cor.noise, v2.noise))
 
