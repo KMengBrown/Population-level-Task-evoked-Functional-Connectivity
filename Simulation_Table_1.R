@@ -11,7 +11,7 @@ library("mgcv")
 ###################################
 
 ## The true underlying ptFC
-corr.vector=c(0.25, 0.5, 0.75)
+corr.vector=c(0.3, 0.5, 0.7)
 
 # Repeatition time
 TR=0.72
@@ -20,11 +20,11 @@ TR=0.72
 t.obs=(0:283)*TR
 
 ## Number of participants
-N.participants=308
+N.participants=100
 
 
 ###################################
-## 2 Stimulus signals
+## 1.2 Stimulus signals
 ###################################
 
 N.lf=function(t){
@@ -65,9 +65,8 @@ N.t=function(t){
 ## Stimulus signal of interest
 N=function(t){ return(N.rh(t)) }
 
-
 ###################################
-## 3 HRF
+## 1.3 HRF
 ###################################
 
 # HRF at the k-th node is of the canonical form
@@ -79,15 +78,16 @@ h_l_function=function(t){ return(canonicalHRF(t, parameter.list, verbose = FALSE
 
 
 ###################################
-## 4 Reaction delay times
+## 1.4 Reaction delay times
 ###################################
 
 t.0.k=0  
-t.0.l=0  
+t.0.l=0
+# Latency times are usually much smaller than the TR in experiments of interest.
 
 
 ###################################
-## 5 Convolutions N * HRF
+## 1.5 Convolutions N * HRF
 ###################################
 
 N.values=vector()
@@ -127,8 +127,9 @@ for (i in 1:length(t.obs)) {
 }
 
 
+
 ###################################
-## 6 Simulate for I = 100 times
+## 6 Simulate for I = 500 times
 ###################################
 
 est_ptFCE_mat=matrix(NA, nrow = 1, ncol = 3)
@@ -150,7 +151,9 @@ for (I in 1:100) {
     ## coefficients beta's
     ###################################
     
-    corr.true=corr.vector[ITER]
+    underlying_ptFC=corr.vector[ITER]
+    
+    corr.true=underlying_ptFC
     V1=2
     V2=3
     V12=sqrt(V1)*sqrt(V2)*corr.true
@@ -166,15 +169,19 @@ for (I in 1:100) {
     beta.lh=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
     beta.rf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
     beta.t=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+    beta.lf_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+    beta.lh_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+    beta.rf_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+    beta.t_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
     
     
     ###################################
     ## Random noise
     ###################################
     
-    v1.noise=1
-    v2.noise=1
-    cor.noise=0.2
+    v1.noise=30
+    v2.noise=30
+    cor.noise=0
     var.noise=cbind(c(v1.noise, sqrt(v1.noise)*sqrt(v2.noise)*cor.noise), c(sqrt(v1.noise)*sqrt(v2.noise)*cor.noise, v2.noise))
     
     
@@ -194,8 +201,8 @@ for (I in 1:100) {
       Y.l.mat[iter,] = 9000 + beta.interest[iter,2]*h.l.conv.N.shifted + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise[,2]
       
       Noise1=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
-      R.k.mat[iter,] = 9000 + beta.lf[iter,1]*h.k.conv.N.lf+beta.lh[iter,1]*h.k.conv.N.lh+beta.rf[iter,1]*h.k.conv.N.rf+beta.t[iter,1]*h.k.conv.N.t + Noise1[,1]
-      R.l.mat[iter,] = 9000 + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise1[,2]
+      R.k.mat[iter,] = 9000 + beta.lf_tilde[iter,1]*h.k.conv.N.lf+beta.lh_tilde[iter,1]*h.k.conv.N.lh+beta.rf_tilde[iter,1]*h.k.conv.N.rf+beta.t_tilde[iter,1]*h.k.conv.N.t + Noise1[,1]
+      R.l.mat[iter,] = 9000 + beta.lf_tilde[iter,2]*h.l.conv.N.lf+beta.lh_tilde[iter,2]*h.l.conv.N.lh+beta.rf_tilde[iter,2]*h.l.conv.N.rf+beta.t_tilde[iter,2]*h.l.conv.N.t + Noise1[,2]
       
     }
     
@@ -237,21 +244,10 @@ sample_corr_mat=sample_corr_mat[-1,]
 ###################################
 
 
-for (i in 1:3) {
-  print(paste("\rho = ", as.character(corr.vector[i])))
-  print(mean(est_ptFCE_mat[,i]-sample_corr_mat[,i]))
-  print(sd(est_ptFCE_mat[,i]-sample_corr_mat[,i]))
-}
-
-for (i in 1:3) {
-  print(paste("\rho = ", as.character(corr.vector[i])))
-  print(mean(est_AMUSE_ptFCE[,i]-sample_corr_mat[,i]))
-  print(sd(est_AMUSE_ptFCE[,i]-sample_corr_mat[,i]))
-}
+write.csv(est_ptFCE_mat, "ptFCE_N_100.csv")
+write.csv(est_AMUSE_ptFCE, "AMUSE_ptFCE_N_100.csv")
 
 
 ############################
 ## End
 ############################
-
-
