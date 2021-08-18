@@ -147,7 +147,7 @@ ptFCE=function(Y_k, Y_l,
   ind.storage=which(frequencies<cut_off)
   # The following line restricts the estimation result in [0,1].
   opt.est=max(c(0, min(c(median(vector.all.freq[ind.storage]), 1))))
-
+  
   if(freq_plot==TRUE){
     index.storage=which(frequencies<=1/(2*TR))
     plot(frequencies[index.storage], vector.all.freq[index.storage], 
@@ -157,7 +157,12 @@ ptFCE=function(Y_k, Y_l,
     lines(frequencies[ind.storage], vector.all.freq[ind.storage],
           col="orange", type = "l", lty=1, lwd=3)
     abline(h=opt.est, lty=3, col="red", lwd=3)
-    legend("bottomright", c("Est(Freq)", "Opt Est"), col=c("blue", "red"), lty=c(1,3))
+    if(median(frequencies[-ind.storage])>=0.5){
+      legend("bottomright", c("Est(Freq)", "Opt Est"), col=c("blue", "red"), lty=c(1,3))
+    }else{
+      legend("topright", c("Est(Freq)", "Opt Est"), col=c("blue", "red"), lty=c(1,3))
+    }
+    
   }
   
   resp=list(est=opt.est,
@@ -194,7 +199,7 @@ library("neuRosim")
 
 AMUSE_ptFCE=function(Y_k, Y_l, N, TR,
                      freq_plot=TRUE, 
-                     cut_off=0.1){
+                     cut_off=0.15){
   
   # Y_k and Y_l: They present task-evoked BOLD signals.
   #            * They are matrices.
