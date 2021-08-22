@@ -21,7 +21,7 @@ library("neuRosim")
 ###################################
 
 # The underlying ptFC. 
-underlying_ptFC=0.7
+underlying_ptFC=0.3
 
 # Repeatition time
 TR=0.72
