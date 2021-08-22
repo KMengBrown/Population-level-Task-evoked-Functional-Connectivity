@@ -157,6 +157,8 @@ beta.lf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.lh=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.rf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.t=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+
+# The following beta.xx.tilde will be implemented to generate R_tilde(t).
 beta.lf_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.lh_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.rf_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
@@ -184,10 +186,15 @@ R.k.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
 R.l.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
 for (iter in 1:N.participants) {
   
+  # The following signals are viewed as BOLD signals Y(t) (= P(t) + R(t))
+  # observed in task-fMRI experiments.
   Noise=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
   Y.k.mat[iter,] = 9000 + beta.interest[iter,1]*h.k.conv.N.shifted + beta.lf[iter,1]*h.k.conv.N.lf+beta.lh[iter,1]*h.k.conv.N.lh+beta.rf[iter,1]*h.k.conv.N.rf+beta.t[iter,1]*h.k.conv.N.t + Noise[,1]
   Y.l.mat[iter,] = 9000 + beta.interest[iter,2]*h.l.conv.N.shifted + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise[,2]
   
+  # The following signals are viewed as BOLD signals R_tilde(t)
+  # observed in resting-state fMRI experiments.
+  # R_tilde(t) are different from R(t).
   Noise1=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
   R.k.mat[iter,] = 9000 + beta.lf_tilde[iter,1]*h.k.conv.N.lf+beta.lh_tilde[iter,1]*h.k.conv.N.lh+beta.rf_tilde[iter,1]*h.k.conv.N.rf+beta.t_tilde[iter,1]*h.k.conv.N.t + Noise1[,1]
   R.l.mat[iter,] = 9000 + beta.lf_tilde[iter,2]*h.l.conv.N.lf+beta.lh_tilde[iter,2]*h.l.conv.N.lh+beta.rf_tilde[iter,2]*h.l.conv.N.rf+beta.t_tilde[iter,2]*h.l.conv.N.t + Noise1[,2]
