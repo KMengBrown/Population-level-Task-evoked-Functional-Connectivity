@@ -73,11 +73,13 @@ Auto_covariance=function(Signal.1, Signal.2){
 
 
 ############################
-## 1.2 ptFCE Algorithm
+## 1.2 Semi-finished ptFCE Algorithm
+##     (when underlying reference
+##     signals are available)
 ############################
 
 
-ptFCE=function(Y_k, Y_l, 
+Semi_finished_ptFCE=function(Y_k, Y_l, 
                R_k, R_l,
                TR,
                cut_off=0.15,
@@ -194,10 +196,10 @@ library("neuRosim")
 
 
 ############################
-## 2.2 AMUSE-ptFCE Algorithm
+## 2.2 ptFCE Algorithm
 ############################
 
-AMUSE_ptFCE=function(Y_k, Y_l, N, TR,
+ptFCE=function(Y_k, Y_l, N, TR,
                      freq_plot=TRUE, 
                      cut_off=0.15){
   
@@ -259,10 +261,8 @@ AMUSE_ptFCE=function(Y_k, Y_l, N, TR,
   R_k=matrix(0, nrow = dim(Y_k)[1], ncol = dim(Y_k)[2])
   R_l=R_k
   
-  resp=ptFCE(Y_k_store, Y_l_store, R_k, R_l, TR, freq_plot = freq_plot, cut_off = cut_off)
+  resp=Semi_finished_ptFCE(Y_k_store, Y_l_store, R_k, R_l, TR, freq_plot = freq_plot, cut_off = cut_off)
   return(resp)
-  
-  # Output is the same as that of ptFCE().
   
 }
 
@@ -270,3 +270,4 @@ AMUSE_ptFCE=function(Y_k, Y_l, N, TR,
 ############################
 ## End
 ############################
+
