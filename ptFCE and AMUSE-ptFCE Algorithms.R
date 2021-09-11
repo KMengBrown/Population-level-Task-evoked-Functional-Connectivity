@@ -159,11 +159,7 @@ Semi_finished_ptFCE=function(Y_k, Y_l,
     lines(frequencies[ind.storage], vector.all.freq[ind.storage],
           col="orange", type = "l", lty=1, lwd=3)
     abline(h=opt.est, lty=3, col="red", lwd=3)
-    if(median(frequencies[-ind.storage])>=0.5){
-      legend("bottomright", c("Est(Freq)", "Opt Est"), col=c("blue", "red"), lty=c(1,3))
-    }else{
-      legend("topright", c("Est(Freq)", "Opt Est"), col=c("blue", "red"), lty=c(1,3))
-    }
+    legend("topright", c("Est(Freq)", "Opt Est"), col=c("blue", "red"), lty=c(1,3))
     
   }
   
