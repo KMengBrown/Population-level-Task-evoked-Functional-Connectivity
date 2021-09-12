@@ -1,6 +1,6 @@
 ###############################################################
 ##############    Simulation Illustrations for    #############
-##############  ptFCE and AMUSE-ptFCE Algorithms  #############
+##############        the ptFCE Algorithm         #############
 ###############################################################
 
 ###################################
@@ -193,12 +193,14 @@ plot(t.obs, Y.l.mat[1,], type = "l", xlab = "Time", ylab = "Y_2 (t)")
 
 
 ###################################
-## 3 Estimation using the
-##   AMUSE-ptFCE algorithm
+## 2 Estimation using the ptFCE algorithm
 ###################################
 
 par(mfrow=c(1, 1))
 est_ptFCE=ptFCE(Y_k=Y.k.mat, Y_l = Y.l.mat, N=N.values, TR=0.72, freq_plot=TRUE)
+
+## True and estimated ptFC
+underlying_ptFC
 est_ptFCE$est
 
 
