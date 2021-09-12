@@ -21,7 +21,7 @@ library("neuRosim")
 ###################################
 
 # The underlying ptFC. 
-underlying_ptFC=0.3
+underlying_ptFC=0.25
 
 # Repeatition time
 TR=0.72
@@ -30,7 +30,7 @@ TR=0.72
 t.obs=(0:283)*TR
 
 ## Number of participants
-N.participants=10000
+N.participants=308
 
 ###################################
 ## 1.2 Stimulus signals
@@ -78,12 +78,11 @@ N=function(t){ return(N.rh(t)) }
 ## 1.3 HRF
 ###################################
 
-# HRF at the k-th node is of the canonical form
-h_k_function=function(t){ return(canonicalHRF(t, verbose = FALSE)) }
-
-# HRF at the l-th node is noncanonical.
-parameter.list=list(a1=10, a2=15, b1=0.9, b2=0.9, c=0.35)
-h_l_function=function(t){ return(canonicalHRF(t, parameter.list, verbose = FALSE)) }
+# HRFs
+parameter.list_1=list(a1=4, a2=10, b1=0.8, b2=0.8, c=0.4)
+h_k_function=function(t){ return(canonicalHRF(t, parameter.list_1, verbose = FALSE)) }
+parameter.list_2=list(a1=8, a2=14, b1=1, b2=1, c=0.3)
+h_l_function=function(t){ return(canonicalHRF(t, parameter.list_2, verbose = FALSE)) }
 
 
 ###################################
@@ -158,12 +157,6 @@ beta.lh=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.rf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 beta.t=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
 
-# The following beta.xx.tilde will be implemented to generate R_tilde(t).
-beta.lf_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
-beta.lh_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
-beta.rf_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
-beta.t_tilde=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
-
 
 ###################################
 ## 1.7 Random noise
@@ -182,8 +175,6 @@ var.noise=cbind(c(v1.noise, sqrt(v1.noise)*sqrt(v2.noise)*cor.noise), c(sqrt(v1.
 
 Y.k.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
 Y.l.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
-R.k.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
-R.l.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
 for (iter in 1:N.participants) {
   
   # The following signals are viewed as BOLD signals Y(t) (= P(t) + R(t))
@@ -191,35 +182,14 @@ for (iter in 1:N.participants) {
   Noise=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
   Y.k.mat[iter,] = 9000 + beta.interest[iter,1]*h.k.conv.N.shifted + beta.lf[iter,1]*h.k.conv.N.lf+beta.lh[iter,1]*h.k.conv.N.lh+beta.rf[iter,1]*h.k.conv.N.rf+beta.t[iter,1]*h.k.conv.N.t + Noise[,1]
   Y.l.mat[iter,] = 9000 + beta.interest[iter,2]*h.l.conv.N.shifted + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise[,2]
-  
-  # The following signals are viewed as BOLD signals R_tilde(t)
-  # observed in resting-state fMRI experiments.
-  # R_tilde(t) are different from R(t).
-  Noise1=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
-  R.k.mat[iter,] = 9000 + beta.lf_tilde[iter,1]*h.k.conv.N.lf+beta.lh_tilde[iter,1]*h.k.conv.N.lh+beta.rf_tilde[iter,1]*h.k.conv.N.rf+beta.t_tilde[iter,1]*h.k.conv.N.t + Noise1[,1]
-  R.l.mat[iter,] = 9000 + beta.lf_tilde[iter,2]*h.l.conv.N.lf+beta.lh_tilde[iter,2]*h.l.conv.N.lh+beta.rf_tilde[iter,2]*h.l.conv.N.rf+beta.t_tilde[iter,2]*h.l.conv.N.t + Noise1[,2]
-  
+
 }
 
 
 ## Plot examples of Y_k, Y_l, R_tilde_k, and R_tilde_l
-par(mfrow=c(4, 1), mar=c(4,4,0.5,0.5))
-plot(t.obs, Y.k.mat[1,], type = "l", xlab = "Time", ylab = "Y_k (t)")
-plot(t.obs, Y.l.mat[1,], type = "l", xlab = "Time", ylab = "Y_l (t)")
-plot(t.obs, R.k.mat[1,], type = "l", xlab = "Time", ylab = "R_tilde_k (t)")
-plot(t.obs, R.l.mat[1,], type = "l", xlab = "Time", ylab = "R_tilde_l (t)")
-
-par(mfrow=c(1, 1))
-###################################
-## 2 Estimation using the
-##   ptFCE algorithm
-###################################
-
-est_ptFCE=ptFCE(Y_k = Y.k.mat, Y_l = Y.l.mat, R_k = R.k.mat, R_l = R.l.mat, TR=TR)
-
-abs(cor(beta.interest[,1], beta.interest[,2]))
-est_ptFCE$est
-
+par(mfrow=c(2, 1), mar=c(4,4,0.5,0.5))
+plot(t.obs, Y.k.mat[1,], type = "l", xlab = "Time", ylab = "Y_1 (t)")
+plot(t.obs, Y.l.mat[1,], type = "l", xlab = "Time", ylab = "Y_2 (t)")
 
 
 ###################################
@@ -227,9 +197,9 @@ est_ptFCE$est
 ##   AMUSE-ptFCE algorithm
 ###################################
 
-est_AMUSE_ptFCE=AMUSE_ptFCE(Y_k=Y.k.mat, Y_l = Y.l.mat, N=N.values, TR=0.72, freq_plot=TRUE)
-abs(cor(beta.interest[,1], beta.interest[,2]))
-est_AMUSE_ptFCE$est
+par(mfrow=c(1, 1))
+est_ptFCE=ptFCE(Y_k=Y.k.mat, Y_l = Y.l.mat, N=N.values, TR=0.72, freq_plot=TRUE)
+est_ptFCE$est
 
 
 
