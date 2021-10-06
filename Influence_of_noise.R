@@ -1,37 +1,47 @@
 ###############################################################
-##############      Influence of Noise on the     #############
-##############  ptFCE and AMUSE-ptFCE Algorithms  #############
+##############     Influence of Noise Signal     ##############
+##############     epsilon (t) on Estimation     ##############
+##############         Bias and Variance         ##############
 ###############################################################
 
 ###################################
-## Variance scale parameter lambda
-## in (4.4) of ME.
+## Packages
+###################################
+library("mgcv")
+#install.packages("neuRosim")
+library("neuRosim")
+
+
+###################################
+## 1 Preparations for Generating Simulation Data
 ###################################
 
-lambda_length=50
-scaling=seq(from=0.01, to=5, length.out = lambda_length)
-
 
 ###################################
-## Basic parameters for data
+## 1.1 Basic parameters for data
+##     and simulations
 ###################################
 
 # The underlying ptFC. 
-underlying_ptFC=0.5
+underlying_ptFC=0.25
 
 # Repeatition time
 TR=0.72
 
-#Observation times
+# Observation times
 t.obs=(0:283)*TR
 
-## Number of participants
+# Number of participants
 N.participants=308
 
+# Number of simulations
+n_simulations=500
 
+# Parameter lambda for measuring the size of noise
+lambda_vector=seq(from=0.5, to=5, length.out = 50)
 
 ###################################
-## Stimulus signals
+## 1.2 Stimulus signals
 ###################################
 
 N.lf=function(t){
@@ -72,29 +82,28 @@ N.t=function(t){
 ## Stimulus signal of interest
 N=function(t){ return(N.rh(t)) }
 
-
 ###################################
-## HRF
+## 1.3 HRF
 ###################################
 
-# HRF at the k-th node is of the canonical form
-h_k_function=function(t){ return(canonicalHRF(t, verbose = FALSE)) }
-
-# HRF at the l-th node is noncanonical.
-parameter.list=list(a1=10, a2=15, b1=0.9, b2=0.9, c=0.35)
-h_l_function=function(t){ return(canonicalHRF(t, parameter.list, verbose = FALSE)) }
+# (Biased) HRFs
+parameter.list_1=list(a1=4, a2=10, b1=0.8, b2=0.8, c=0.4)
+h_k_function=function(t){ return(canonicalHRF(t, parameter.list_1, verbose = FALSE)) }
+parameter.list_2=list(a1=8, a2=14, b1=1, b2=1, c=0.3)
+h_l_function=function(t){ return(canonicalHRF(t, parameter.list_2, verbose = FALSE)) }
 
 
 ###################################
-## Reaction delay times
+## 1.4 Reaction delay times
 ###################################
 
 t.0.k=0  
-t.0.l=0 
+t.0.l=0
+# Latency times are usually much smaller than the TR in experiments of interest.
 
 
 ###################################
-## Convolutions N * HRF
+## 1.5 Convolutions N * HRF
 ###################################
 
 N.values=vector()
@@ -135,154 +144,82 @@ for (i in 1:length(t.obs)) {
 
 
 ###################################
-## For each lambda,
-## we simulate for I = 100 times.
+## 2 Simulation iteraton 
+##   (for n_simulation = 500 runs)
 ###################################
 
-est.with.R.mat=matrix(NA, nrow = 1, ncol = lambda_length)
-est.without.R.mat=matrix(NA, nrow = 1, ncol = lambda_length)
-sample.corr.mat=matrix(NA, nrow = 1, ncol = lambda_length)
+estimated_results=matrix(NA, ncol = length(lambda_vector),
+                          nrow = n_simulations)
 
-for (I in 1:100) {
+for (I in 1:n_simulations) {
   
   print(I)
-  
-  est.with.R.vector=vector()
-  est.without.R.vector=vector()
-  sample.cor.vector=vector()
-  
-  for (ITER in 1:lambda_length) {
-
     
-    
-    ###################################
-    ## Random effect 
-    ## coefficients beta's
-    ###################################
-    
-    corr.true=0.5
-    V1=2
-    V2=3
-    V12=sqrt(V1)*sqrt(V2)*corr.true
-    V.beta=cbind(c(V1, V12), c(V12, V2))
-    beta.interest=rmvn(N.participants, mu=c(0,0), V=V.beta)
-    
-    corr.other=0.3
-    V1=2
-    V2=3
-    V12=sqrt(V1)*sqrt(V2)*corr.other
-    V.beta.other=cbind(c(V1, V12), c(V12, V2))
-    beta.lf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
-    beta.lh=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
-    beta.rf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
-    beta.t=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
-    
-    
-    ###################################
-    ## Random noise
-    ###################################
-    
-    v1.noise=2
-    v2.noise=3
-    v12.noise=0.4
-    var.noise=scaling[ITER]*cbind(c(v1.noise, v12.noise), c(v12.noise, v2.noise))
-    
-
-    ###################################
-    ## Generating task-evoked and
-    ## reference signals
-    ###################################
-    
-    Y.k.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
-    Y.l.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
-    R.k.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
-    R.l.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
-    for (iter in 1:N.participants) {
+    for (J in 1:length(lambda_vector)) {
       
-      Noise=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
-      Y.k.mat[iter,] = 9000 + beta.interest[iter,1]*h.k.conv.N.shifted + beta.lf[iter,1]*h.k.conv.N.lf+beta.lh[iter,1]*h.k.conv.N.lh+beta.rf[iter,1]*h.k.conv.N.rf+beta.t[iter,1]*h.k.conv.N.t + Noise[,1]
-      Y.l.mat[iter,] = 9000 + beta.interest[iter,2]*h.l.conv.N.shifted + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise[,2]
+      ###################################
+      ## 2.1 Random effect 
+      ##     coefficients beta's
+      ###################################
       
-      Noise1=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
-      R.k.mat[iter,] = 9000 + beta.lf[iter,1]*h.k.conv.N.lf+beta.lh[iter,1]*h.k.conv.N.lh+beta.rf[iter,1]*h.k.conv.N.rf+beta.t[iter,1]*h.k.conv.N.t + Noise1[,1]
-      R.l.mat[iter,] = 9000 + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise1[,2]
+      corr.true=underlying_ptFC
+      V1=2
+      V2=3
+      V12=sqrt(V1)*sqrt(V2)*corr.true
+      V.beta=cbind(c(V1, V12), c(V12, V2))
+      beta.interest=rmvn(N.participants, mu=c(0,0), V=V.beta)
+      
+      corr.other=0.3
+      V1=2
+      V2=3
+      V12=sqrt(V1)*sqrt(V2)*corr.other
+      V.beta.other=cbind(c(V1, V12), c(V12, V2))
+      beta.lf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+      beta.lh=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+      beta.rf=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+      beta.t=rmvn(N.participants, mu=c(0,0), V=V.beta.other)
+      
+      
+      ###################################
+      ## 2.2 Random noise
+      ###################################
+      
+      v1.noise=30
+      v2.noise=30
+      cor.noise=0
+      var.noise=lambda_vector[J]*cbind(c(v1.noise, sqrt(v1.noise)*sqrt(v2.noise)*cor.noise), c(sqrt(v1.noise)*sqrt(v2.noise)*cor.noise, v2.noise))
+      
+      
+      ###################################
+      ## 2.3 Generating task-evoked and
+      ##     reference signals
+      ###################################
+      
+      Y.k.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
+      Y.l.mat=matrix(NA, nrow = N.participants, ncol = length(t.obs))
+      for (iter in 1:N.participants) {
+        
+        # The following signals are viewed as BOLD signals Y(t) (= P(t) + R(t))
+        # observed in task-fMRI experiments.
+        Noise=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
+        Y.k.mat[iter,] = 9000 + beta.interest[iter,1]*h.k.conv.N.shifted + beta.lf[iter,1]*h.k.conv.N.lf+beta.lh[iter,1]*h.k.conv.N.lh+beta.rf[iter,1]*h.k.conv.N.rf+beta.t[iter,1]*h.k.conv.N.t + Noise[,1]
+        Y.l.mat[iter,] = 9000 + beta.interest[iter,2]*h.l.conv.N.shifted + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise[,2]
+        
+      }
+      
+      
+      ###################################
+      ## 2.4 The implement of ptFCE
+      ###################################
+      
+      est_ptFCE=ptFCE(Y_k=Y.k.mat, Y_l = Y.l.mat, N=N.values, TR=0.72, freq_plot=FALSE)
+      
+      estimated_results[I, J]=est_ptFCE$est
+      
       
     }
-    
-
-    ###################################
-    ## Estimation using the
-    ## ptFCE algorithm
-    ###################################
-    
-    est.result=ptFCE(Y_k = Y.k.mat, Y_l = Y.l.mat, R_k = R.k.mat, R_l = R.l.mat, TR=TR, freq_plot = FALSE)
-    est.with.R.vector[ITER]=est.result$est
-    
-    
-    ###################################
-    ## Estimation using the
-    ## AMUSE-ptFCE algorithm
-    ###################################
-    
-    est.result=AMUSE_ptFCE(Y_k=Y.k.mat, Y_l = Y.l.mat, N=N.values, TR=0.72, freq_plot=FALSE)
-    est.without.R.vector[ITER]=est.result$est
-    
-    
-    sample.cor.vector[ITER]=abs(cor(beta.interest[,1], beta.interest[,2]))
-    
-    
-  }
-  
-  est.with.R.mat=rbind(est.with.R.mat, est.with.R.vector)
-  est.without.R.mat=rbind(est.without.R.mat, est.without.R.vector)
-  sample.corr.mat=rbind(sample.corr.mat, sample.cor.vector)
   
 }
 
-est.with.R.mat=est.with.R.mat[-1,]
-est.without.R.mat=est.without.R.mat[-1,]
-sample.corr.mat=sample.corr.mat[-1,]
+#write.csv(estimated_results, file = "Noise_influence_ptFC_0.75.csv")
 
-
-
-###################################
-## Figure 5 in ME
-###################################
-
-mean.vector_ptFCE=vector()
-sd.vector_ptFCE=vector()
-for (i in 1:lambda_length) {
-  mean.vector_ptFCE[i]=mean(est.with.R.mat[,i]-sample.corr.mat[,i], na.rm = TRUE)
-  sd.vector_ptFCE[i]=sd(est.with.R.mat[,i]-sample.corr.mat[,i], na.rm = TRUE)
-}
-
-
-mean.vector_AMUSE_ptFCE=vector()
-sd.vector_AMUSE_ptFCE=vector()
-for (i in 1:lambda_length) {
-  mean.vector_AMUSE_ptFCE[i]=mean(est.without.R.mat[,i]-sample.corr.mat[,i], na.rm = TRUE)
-  sd.vector_AMUSE_ptFCE[i]=sd(est.without.R.mat[,i]-sample.corr.mat[,i], na.rm = TRUE)
-}
-
-
-par(mfrow=c(2, 1), mar=c(4.5, 4.5, 0.5, 0.5))
-
-plot(scaling, mean.vector_ptFCE, type = "l", ylim = c(-0.05,0.25), 
-     lwd=3, col="blue",
-     xlab = "Lambda", ylab = "alg1_ptFC - true_ptFC")
-lines(scaling, mean.vector_ptFCE+1.96*sd.vector_ptFCE, col="red", lwd=2, lty = 2)
-lines(scaling, mean.vector_ptFCE-1.96*sd.vector_ptFCE, col="red", lwd=2, lty = 2)
-abline(h=0, lty=3, lwd=2)
-
-plot(scaling, mean.vector_AMUSE_ptFCE, type = "l", ylim = c(-0.4,0.1), 
-     lwd=3, col="blue",
-     xlab = "Lambda", ylab = "alg1_ptFC - true_ptFC")
-lines(scaling, mean.vector_AMUSE_ptFCE+1.96*sd.vector_AMUSE_ptFCE, col="red", lwd=2, lty = 2)
-lines(scaling, mean.vector_AMUSE_ptFCE-1.96*sd.vector_AMUSE_ptFCE, col="red", lwd=2, lty = 2)
-abline(h=0, lty=3, lwd=2)
-
-
-
-############################
-## End
-############################
