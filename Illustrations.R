@@ -30,7 +30,7 @@ TR=0.72
 t.obs=(0:283)*TR
 
 ## Number of participants
-N.participants=308
+N.participants=1000
 
 ###################################
 ## 1.2 Stimulus signals
@@ -182,7 +182,7 @@ for (iter in 1:N.participants) {
   Noise=rmvn(length(t.obs), mu=rep(0, 2), V=var.noise)
   Y.k.mat[iter,] = 9000 + beta.interest[iter,1]*h.k.conv.N.shifted + beta.lf[iter,1]*h.k.conv.N.lf+beta.lh[iter,1]*h.k.conv.N.lh+beta.rf[iter,1]*h.k.conv.N.rf+beta.t[iter,1]*h.k.conv.N.t + Noise[,1]
   Y.l.mat[iter,] = 9000 + beta.interest[iter,2]*h.l.conv.N.shifted + beta.lf[iter,2]*h.l.conv.N.lf+beta.lh[iter,2]*h.l.conv.N.lh+beta.rf[iter,2]*h.l.conv.N.rf+beta.t[iter,2]*h.l.conv.N.t + Noise[,2]
-
+  
 }
 
 
