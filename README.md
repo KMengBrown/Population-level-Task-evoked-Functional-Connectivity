@@ -6,9 +6,9 @@
 
 
 The following file contains function "ptFCE." This function implements Algorithms 1 of ME. Running the code in this file is needed before reproducing any simulations or data analyses in ME.
-* ptFCE and AMUSE-ptFCE Algorithms.R
+* ptFCE Algorithm.R
 
-The following file illustrates the implementation of functions "ptFCE" and "AMUSE_ptFCE" using simulations.
+The following file illustrates the implementation of function "ptFCE" using simulations.
 * Illustrations.R
 
 
