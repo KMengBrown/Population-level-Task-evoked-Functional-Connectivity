@@ -2,6 +2,7 @@
 ##############       Simulation Study for The     #############
 ##############         Comparison of ptFCE        #############
 ##############       with Existing Approaches     #############
+##############          Using Mechanism 2         #############
 ###############################################################
 
 library("mgcv")
