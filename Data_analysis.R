@@ -110,7 +110,7 @@ est_AMUSE_ptFCE=vector()
 
 for (i in iteration.index) {
   print(i)
-  results=AMUSE_ptFCE(Y_k = Data_list[[1]], Y_l = Data_list[[i]], N=N.values, TR=TR, freq_plot = FALSE)
+  results=ptFCE(Y_k = Data_list[[1]], Y_l = Data_list[[i]], N=N.values, TR=TR, freq_plot = FALSE)
   est_AMUSE_ptFCE[i]=results$est
 }
 
@@ -133,7 +133,7 @@ for (i in iteration.index) {
   for (j in 1:308) {
     corr.vector[j]=cor(Data.mat.1[j,], Data.mat.i[j,])
   }
-  est_naive_Pearson_correlation[i]=median(corr.vector)
+  est_naive_Pearson_correlation[i]=mean(corr.vector)
   
 }
 
@@ -158,7 +158,7 @@ for (i in iteration.index) {
   for (j in 1:308) {
     corr.vector[j]=cor(Data.mat.1[j,], Data.mat.i[j,])
   }
-  est_task_Pearson_correlation[i]=median(corr.vector)
+  est_task_Pearson_correlation[i]=mean(corr.vector)
   
 }
 
@@ -301,7 +301,7 @@ for (i in iteration.index) {
     est.store[iter]=cor(beta.est.k, beta.est.l)
   }
   
-  est_beta_series[i]=median(est.store)
+  est_beta_series[i]=mean(est.store)
   
 }
 
@@ -326,7 +326,7 @@ for (i in iteration.index) {
     coh.results=coh(Data.mat.1[iter, ], Data.mat.i[iter, ], f=1/TR, plot=FALSE)
     est.store[iter]=median(coh.results[coh.results[,1]<0.15,2])
   }
-  est_coherence_analysis[i]=median(est.store)
+  est_coherence_analysis[i]=mean(est.store)
   
 }
 
@@ -348,6 +348,31 @@ task_Pearson_correlation_plot=(est_task_Pearson_correlation[iteration.index]-min
 beta_series_plot=(est_beta_series[iteration.index]-min(est_beta_series[iteration.index]))/(max(est_beta_series[iteration.index])-min(est_beta_series[iteration.index]))
 coherence_analysis_plot=(est_coherence_analysis[iteration.index]-min(est_coherence_analysis[iteration.index]))/(max(est_coherence_analysis[iteration.index])-min(est_coherence_analysis[iteration.index]))
 AMUSE_ptFCE_plot=(est_AMUSE_ptFCE[iteration.index]-min(est_AMUSE_ptFCE[iteration.index]))/(max(est_AMUSE_ptFCE[iteration.index])-min(est_AMUSE_ptFCE[iteration.index]))
+
+threshold_comparison=0.5
+naive_Pearson_correlation_blackwhite=as.numeric(naive_Pearson_correlation_plot>threshold_comparison)
+task_Pearson_correlation_blackwhite=as.numeric(task_Pearson_correlation_plot>threshold_comparison)
+beta_series_blackwhite=as.numeric(beta_series_plot>threshold_comparison)
+coherence_analysis_blackwhite=as.numeric(coherence_analysis_plot>threshold_comparison)
+AMUSE_ptFCE_blackwhite=as.numeric(AMUSE_ptFCE_plot>threshold_comparison)
+
+round(sum(AMUSE_ptFCE_blackwhite==naive_Pearson_correlation_blackwhite)/116, 3)
+round(sum(AMUSE_ptFCE_blackwhite==task_Pearson_correlation_blackwhite)/116, 3)
+round(sum(AMUSE_ptFCE_blackwhite==beta_series_blackwhite)/116, 3)
+round(sum(AMUSE_ptFCE_blackwhite==coherence_analysis_blackwhite)/116, 3)
+
+round(sum(naive_Pearson_correlation_blackwhite==task_Pearson_correlation_blackwhite)/116, 3)
+round(sum(naive_Pearson_correlation_blackwhite==beta_series_blackwhite)/116, 3)
+round(sum(naive_Pearson_correlation_blackwhite==coherence_analysis_blackwhite)/116, 3)
+
+round(sum(task_Pearson_correlation_blackwhite==beta_series_blackwhite)/116, 3)
+round(sum(task_Pearson_correlation_blackwhite==coherence_analysis_blackwhite)/116, 3)
+
+round(sum(beta_series_blackwhite==coherence_analysis_blackwhite)/116, 3)
+
+
+data_analysis_results=cbind(naive_Pearson_correlation_plot, task_Pearson_correlation_plot, beta_series_plot, coherence_analysis_plot, AMUSE_ptFCE_plot)
+write.csv(data_analysis_results, file = "data_analysis_results.csv")
 
 par(mfrow=c(1, 1), mar=c(4.5, 4, 0.5, 0.5), xaxt="n")
 
@@ -375,9 +400,11 @@ lines((1:116)+ddd, task_Pearson_correlation_plot, col="orange", lwd=1, pch=16, t
 lines((1:116)+ddd, beta_series_plot, col="darkgreen", lwd=1, pch=16, type = "p", cex=1.2)
 lines((1:116)+ddd, coherence_analysis_plot, col="blue", lwd=1, pch=16, type = "p", cex=1.2)
 lines((1:116)+ddd, AMUSE_ptFCE_plot, lwd=1, pch=16, type = "p", cex=1.2)
-legend("topright", c("AMUSE-ptFCE algorithm", "Naive Pearson correlation", "Task Pearson correlation", "Beta-series regression", "Coherence analysis"),
+abline(h=0.5, col="red", lty=3, lwd=1.5)
+legend("topright", c("ptFCE algorithm", "Naive Pearson correlation", "Task Pearson correlation", "Beta-series regression", "Coherence analysis"),
        col = c("black", "red", "orange", "darkgreen", "blue"), 
        pch = rep(16, 5))
+
 
 
 ######################################################
