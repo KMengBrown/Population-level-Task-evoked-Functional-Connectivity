@@ -15,11 +15,11 @@ The following file illustrates the implementation of function "ptFCE" using simu
 The paper ME has two data components: simulated data and the motor-task data set publicly available from the Human Connectome Project (HCP) database. We provide the complete code for replicating all simulation studies included in ME herein. To replicate the motor-task dataset analysis, we provide the full code that can be applied to data downloaded from HCP.
 
 
-The following two files replicate the simulation studies presented in Tables 1 and 2 of ME.
-* Simulation_Table_1.R
-* Simulation_Table_2.R
+The following two files replicate the simulation studies for methods comparison presented in ME.
+* Comparison_Mech_1.R
+* Comparison_Mech_2.R
 
-The following file replicates the simulation study results presented in Figure 5 of ME.
+The following file replicates the simulation study for ptFCE estimation bias/variance in the Supporting Information of ME.
 * Influence_of_noise.R
 
 
