@@ -221,5 +221,5 @@ for (I in 1:n_simulations) {
   
 }
 
-#write.csv(estimated_results, file = "Noise_influence_ptFC_0.75.csv")
+write.csv(estimated_results, file = "Noise_influence_ptFC_0.25.csv")
 
