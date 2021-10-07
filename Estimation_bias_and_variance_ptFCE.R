@@ -227,7 +227,7 @@ abline(h=0.25, col="red", lty=2)
 abline(h=0.5, col="red", lty=2)
 abline(h=0.75, col="red", lty=2)
 
-write.csv(est_results_matrix, "EstimatonBiasPurpose_1000_participants.csv")
+write.csv(est_results_matrix, "EstimatonBiasPurpose_308_participants.csv")
 
 
 ############################
