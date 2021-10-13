@@ -35,7 +35,7 @@ The following file presents the IDs of subjects in the HCP data set used in our 
 The following file replicates the procedure of computing region-specific time courses corresponding to the AAL atlas. Its output is a collection of 308 ".rda" files. Running this code is needed before replicating the data analyses presented in Figures 6 and 7 of ME.
 * HCPdata.R
 
-The following file replicates the data analyses presented in Figures 6 and 7 of ME. Before running this code, you need to put the "Subjects_IDs.csv" file and all the 308 ".rda" data files in the same folder and set the corresponding working directory, where the 308 ".rda" files are the output from running the "HCPdata.R" code.
+The following file replicates the data analyses presented in ME. Before running this code, you need to put the "Subjects_IDs.csv" file and all the 308 ".rda" data files in the same folder and set the corresponding working directory, where the 308 ".rda" files are the output from running the "HCPdata.R" code.
 * Data_analysis.R
 
 Further details are provided in each script file.
