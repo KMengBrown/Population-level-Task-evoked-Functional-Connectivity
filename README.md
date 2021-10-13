@@ -20,6 +20,9 @@ The following two files replicate the simulation studies for methods comparison 
 * Comparison_Mech_2.R
 
 The following file replicates the simulation study for ptFCE estimation bias/variance in the Supporting Information of ME.
+* Estimation_bias_and_variance_ptFCE.R
+
+The following file replicates the simulation study for the influence of random noise on estimation bias/variance.
 * Influence_of_noise.R
 
 
