@@ -22,7 +22,7 @@ TR=0.72
 t.obs=(0:283)*TR
 
 ## Number of participants
-N.participants=308
+N.participants=50
 
 ## Number of simulations
 n_simulations=500
@@ -82,7 +82,7 @@ parameter.list_2=list(a1=8, a2=14, b1=1, b2=1, c=0.3)
 h_2_function=function(t){ return(canonicalHRF(t, parameter.list_2, verbose = FALSE)) }
 parameter.list_1=list(a1=4, a2=10, b1=0.8, b2=0.8, c=0.4)
 h_3_function=function(t){ return(canonicalHRF(t, parameter.list_1, verbose = FALSE)) }
-
+h_canonical_function=function(t){ return(canonicalHRF(t, verbose = FALSE)) }
 
 ###################################
 ## 1.4 Reaction delay times
@@ -106,6 +106,7 @@ N.t.values=vector()
 h.1.values=vector()
 h.2.values=vector()
 h.3.values=vector()
+h.canonical.values=vector()
 for (i in 1:length(t.obs)) {
   N.values[i]=N(t.obs[i])
   N.lf.values[i]=N.lf(t.obs[i])
@@ -116,11 +117,13 @@ for (i in 1:length(t.obs)) {
   h.1.values[i]=h_1_function(t.obs[i])
   h.2.values[i]=h_2_function(t.obs[i])
   h.3.values[i]=h_3_function(t.obs[i])
+  h.canonical.values[i]=h_canonical_function(t.obs[i])
 }
 
 h.1.conv.N=convolve(N.values, h.1.values)
 h.2.conv.N=convolve(N.values, h.2.values)
 h.3.conv.N=convolve(N.values, h.3.values)
+h.canonical.conv.N.t=convolve(N.values, h.canonical.values)
 h.1.conv.N.lf=convolve(N.lf.values, h.1.values)
 h.2.conv.N.lf=convolve(N.lf.values, h.2.values)
 h.3.conv.N.lf=convolve(N.lf.values, h.3.values)
@@ -158,6 +161,8 @@ coherence_mean=matrix(NA, ncol = length(task_FC_seq),
                       nrow = n_simulations)
 coherence_median=matrix(NA, ncol = length(task_FC_seq),
                         nrow = n_simulations)
+subjectwise_lm=matrix(NA, ncol = length(task_FC_seq),
+                      nrow = n_simulations)
 
 V.beta=diag(c(2,3,2))
 V.beta[1,2]=task_FC_seq[1]*sqrt(2*3)
@@ -204,8 +209,35 @@ for (P in 1:n_simulations) {
   ## The ptFCE algorithm
   est_ptFCE_12=ptFCE(Y_k=Y.1.mat, Y_l = Y.2.mat, N=N.values, TR=0.72, freq_plot=FALSE)
   est_results_matrix[P, 1]=est_ptFCE_12$est
+  beta_k_vector=vector()
+  for (subjects in 1:N.participants) {
+    Y_responses=est_ptFCE_12$Y_k_est[subjects,]
+    lm_results=lm(Y_responses~h.canonical.conv.N.t-1)
+    beta_k_vector[subjects]=lm_results$coefficients
+  }
+  beta_l_vector=vector()
+  for (subjects in 1:N.participants) {
+    Y_responses=est_ptFCE_12$Y_l_est[subjects,]
+    lm_results=lm(Y_responses~h.canonical.conv.N.t-1)
+    beta_l_vector[subjects]=lm_results$coefficients
+  }
+  subjectwise_lm[P, 1]=cor(beta_k_vector, beta_l_vector)
+  
   est_ptFCE_23=ptFCE(Y_k=Y.2.mat, Y_l = Y.3.mat, N=N.values, TR=0.72, freq_plot=FALSE)
   est_results_matrix[P, 2]=est_ptFCE_23$est
+  beta_k_vector=vector()
+  for (subjects in 1:N.participants) {
+    Y_responses=est_ptFCE_23$Y_k_est[subjects,]
+    lm_results=lm(Y_responses~h.canonical.conv.N.t-1)
+    beta_k_vector[subjects]=lm_results$coefficients
+  }
+  beta_l_vector=vector()
+  for (subjects in 1:N.participants) {
+    Y_responses=est_ptFCE_23$Y_l_est[subjects,]
+    lm_results=lm(Y_responses~h.canonical.conv.N.t-1)
+    beta_l_vector[subjects]=lm_results$coefficients
+  }
+  subjectwise_lm[P, 2]=cor(beta_k_vector, beta_l_vector)
   
   
   ## Naive Pearson correlation
@@ -365,8 +397,11 @@ for (P in 1:n_simulations) {
 
 
 
-par(mfrow=c(3,3))
-boxplot(est_results_matrix, main="ptFC")
+par(mfrow=c(2,5))
+boxplot(est_results_matrix, main="ptFC", ylim=c(min(0.3, min(est_results_matrix)),max(0.7, max(est_results_matrix))))
+abline(h=0.4, col="red", lty=2)
+abline(h=0.6, col="red", lty=2)
+boxplot(subjectwise_lm, main="straightforward_LM", ylim=c(min(0.3, min(subjectwise_lm)), max(0.7, max(subjectwise_lm))))
 abline(h=0.4, col="red", lty=2)
 abline(h=0.6, col="red", lty=2)
 boxplot(naive_Pearson_mean, main="naive_Pearson_mean")
@@ -379,6 +414,7 @@ boxplot(coherence_mean, main="coherence_mean")
 boxplot(coherence_median, main="coherence_median")
 
 write.csv(est_results_matrix, file = "Mech1_est_results_matrix.csv")
+write.csv(subjectwise_lm, file = "Mech1_subjectwise_lm.csv")
 write.csv(naive_Pearson_mean, file = "Mech1_naive_Pearson_mean.csv")
 write.csv(naive_Pearson_median, file = "Mech1_naive_Pearson_median.csv")
 write.csv(task_Pearson_mean, file = "Mech1_task_Pearson_mean.csv")
@@ -396,6 +432,7 @@ effectiveness=function(v){
 }
 
 ptFC_rate=0
+lm_rate=0
 naive_Pearson_mean_rate=0
 naive_Pearson_median_rate=0
 task_Pearson_mean_rate=0
@@ -406,6 +443,7 @@ coherence_mean_rate=0
 coherence_median_rate=0
 for (i in 1:n_simulations) {
   ptFC_rate=ptFC_rate+effectiveness(est_results_matrix[i,])
+  lm_rate=lm_rate+effectiveness(subjectwise_lm[i,])
   naive_Pearson_mean_rate=naive_Pearson_mean_rate+effectiveness(naive_Pearson_mean[i,])
   naive_Pearson_median_rate=naive_Pearson_median_rate+effectiveness(naive_Pearson_median[i,])
   task_Pearson_mean_rate=task_Pearson_mean_rate+effectiveness(task_Pearson_mean[i,])
@@ -416,6 +454,7 @@ for (i in 1:n_simulations) {
   coherence_median_rate=coherence_median_rate+effectiveness(coherence_median[i,])
 }
 ptFC_rate=ptFC_rate/n_simulations
+lm_rate=lm_rate/n_simulations
 naive_Pearson_mean_rate=naive_Pearson_mean_rate/n_simulations
 naive_Pearson_median_rate=naive_Pearson_median_rate/n_simulations
 task_Pearson_mean_rate=task_Pearson_mean_rate/n_simulations
@@ -425,5 +464,6 @@ beta_series_median_rate=beta_series_median_rate/n_simulations
 coherence_mean_rate=coherence_mean_rate/n_simulations
 coherence_median_rate=coherence_median_rate/n_simulations
 
-RATE_vector=c(ptFC_rate, naive_Pearson_mean_rate, naive_Pearson_median_rate, task_Pearson_mean_rate, task_Pearson_median_rate, beta_series_mean_rate, beta_series_median_rate, coherence_mean_rate, coherence_median_rate)
+RATE_vector=c(ptFC_rate, lm_rate, naive_Pearson_mean_rate, naive_Pearson_median_rate, task_Pearson_mean_rate, task_Pearson_median_rate, beta_series_mean_rate, beta_series_median_rate, coherence_mean_rate, coherence_median_rate)
 write.csv(RATE_vector, file = "Mech1_RATE_vector.csv")
+
