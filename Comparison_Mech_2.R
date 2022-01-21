@@ -426,7 +426,7 @@ coherence_mean_rate=0
 coherence_median_rate=0
 for (i in 1:n_simulations) {
   ptFC_rate=ptFC_rate+effectiveness(est_results_matrix[i,])
-  lm_rate=lm_rate=effectiveness(subjectwise_lm[i,])
+  lm_rate=lm_rate+effectiveness(subjectwise_lm[i,])
   naive_Pearson_mean_rate=naive_Pearson_mean_rate+effectiveness(naive_Pearson_mean[i,])
   naive_Pearson_median_rate=naive_Pearson_median_rate+effectiveness(naive_Pearson_median[i,])
   task_Pearson_mean_rate=task_Pearson_mean_rate+effectiveness(task_Pearson_mean[i,])
@@ -449,3 +449,6 @@ coherence_median_rate=coherence_median_rate/n_simulations
 
 RATE_vector=c(ptFC_rate, lm_rate, naive_Pearson_mean_rate, naive_Pearson_median_rate, task_Pearson_mean_rate, task_Pearson_median_rate, beta_series_mean_rate, beta_series_median_rate, coherence_mean_rate, coherence_median_rate)
 write.csv(RATE_vector, file = "Mech2_RATE_vector.csv")
+
+
+
