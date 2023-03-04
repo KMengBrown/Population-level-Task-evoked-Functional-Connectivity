@@ -5,6 +5,7 @@
 ###############################################################
 
 library("mgcv")
+library("lme4")
 
 ###################################
 ## 1.1 Basic parameters for data
@@ -21,7 +22,7 @@ TR=0.72
 t.obs=(0:283)*TR
 
 ## Number of participants
-N.participants=308
+N.participants=50
 
 ## Number of simulations
 n_simulations=500
@@ -186,8 +187,6 @@ for (P in 1:n_simulations) {
     
   }
   
-  N=N.values
-  
   Y_k=Y.1.mat
   Y_l=Y.2.mat
   Y_m=Y.3.mat
@@ -198,7 +197,7 @@ for (P in 1:n_simulations) {
   cano_HRF=canonicalHRF(t.variate, verbose = FALSE)
   
   # Convolution
-  N_conv_h=convolve(N, cano_HRF)
+  N_conv_h=convolve(N.values, cano_HRF)
   
   N_conv_h.shifted=matrix(NA, nrow = dim(Y_k)[1], ncol = dim(Y_k)[2])
   Y_k.shifted=matrix(NA, nrow = dim(Y_k)[1], ncol = dim(Y_k)[2])
