@@ -44,8 +44,7 @@ The following file replicates the data analyses presented in ME. Before running 
 Further details are provided in each script file.
 
 
-Kun (Michael) Meng,
-
-Ph.D. Candidate, 
-Department of Biostatistics, 
+Kun Meng, Ph.D.
+Prager Assistant Professor
+Division of Applied Mathematics
 Brown University
