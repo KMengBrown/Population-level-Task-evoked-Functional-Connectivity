@@ -44,7 +44,7 @@ The following file replicates the data analyses presented in ME. Before running 
 Further details are provided in each script file.
 
 
-Kun Meng, Ph.D.
+Kun Meng, Ph.D.\\
 Prager Assistant Professor
 Division of Applied Mathematics
 Brown University
